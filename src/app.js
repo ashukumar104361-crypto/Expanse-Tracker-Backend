@@ -61,12 +61,12 @@ app.get('/api/health', (req, res) => {
 });
 
 // Mount API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/expenses', expenseRoutes);
-app.use('/api/budgets', budgetRoutes);
-app.use('/api/dashboard', dashboardRoutes);
-app.use('/api/suggestions', suggestionRoutes);
+app.use(['/api/auth', '/auth'], authRoutes);
+app.use(['/api/categories', '/categories'], categoryRoutes);
+app.use(['/api/expenses', '/expenses'], expenseRoutes);
+app.use(['/api/budgets', '/budgets'], budgetRoutes);
+app.use(['/api/dashboard', '/dashboard'], dashboardRoutes);
+app.use(['/api/suggestions', '/suggestions'], suggestionRoutes);
 
 // Centralized Error Handling
 app.use(notFoundHandler);
