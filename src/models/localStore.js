@@ -12,13 +12,11 @@ const initSampleData = () => {
   if (users.length > 0) return;
 
   const demoUserId = '00000000-0000-0000-0000-000000000001';
-  // Password is "password123" hashed with bcrypt:
-  // $2a$10$wE90Kq4G5t3lD/y6lE4.reC9iN2P.V01l5Rz5k6W8.9t2XqJg4j8.
   users.push({
     id: demoUserId,
     name: 'Ashu Sharma',
     email: 'ashu@example.com',
-    password_hash: '$2a$10$Ww4o5Z6mEwL1d9G3/90Vqe9991tO2X2z5a6b7c8d9e0f1g2h3i4j5',
+    password_hash: '$2a$10$S4y.1IyyeutdoKmy02QfQegIC.uL1UFeGy/HGDPUF4a8XBm/pK.5u',
     age: 18,
     monthly_income: 10000,
     created_at: new Date().toISOString(),

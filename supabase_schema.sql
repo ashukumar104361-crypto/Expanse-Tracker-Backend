@@ -5,14 +5,8 @@
 -- 1. Enable UUID Extension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- 2. Drop existing tables if re-running
-DROP TABLE IF EXISTS budgets CASCADE;
-DROP TABLE IF EXISTS expenses CASCADE;
-DROP TABLE IF EXISTS categories CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-
--- 3. Users Table
-CREATE TABLE users (
+-- 2. Users Table
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -23,8 +17,8 @@ CREATE TABLE users (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Categories Table
-CREATE TABLE categories (
+-- 3. Categories Table
+CREATE TABLE IF NOT EXISTS categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE,
     description TEXT,
@@ -32,8 +26,8 @@ CREATE TABLE categories (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Expenses Table
-CREATE TABLE expenses (
+-- 4. Expenses Table
+CREATE TABLE IF NOT EXISTS expenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category_id INT REFERENCES categories(id) ON DELETE SET NULL,
@@ -47,8 +41,8 @@ CREATE TABLE expenses (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Budgets Table (Supports both Overall Monthly Budget when category_id is NULL, or Category Budget)
-CREATE TABLE budgets (
+-- 5. Budgets Table (Supports both Overall Monthly Budget when category_id is NULL, or Category Budget)
+CREATE TABLE IF NOT EXISTS budgets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     category_id INT REFERENCES categories(id) ON DELETE CASCADE,
@@ -60,12 +54,12 @@ CREATE TABLE budgets (
     CONSTRAINT unique_user_category_month_year UNIQUE NULLS NOT DISTINCT (user_id, category_id, month, year)
 );
 
--- 7. Indexes for High Performance Queries
-CREATE INDEX idx_expenses_user_date ON expenses(user_id, expense_date DESC);
-CREATE INDEX idx_expenses_user_category ON expenses(user_id, category_id);
-CREATE INDEX idx_budgets_user_period ON budgets(user_id, year, month);
+-- 6. Indexes for High Performance Queries
+CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, expense_date DESC);
+CREATE INDEX IF NOT EXISTS idx_expenses_user_category ON expenses(user_id, category_id);
+CREATE INDEX IF NOT EXISTS idx_budgets_user_period ON budgets(user_id, year, month);
 
--- 8. Seed Default Teenager-Friendly Categories
+-- 7. Seed Default Teenager-Friendly Categories
 INSERT INTO categories (name, description, icon) VALUES
 ('Food', 'Snacks, street food, lunch, cafe visits', 'Utensils'),
 ('Travel', 'Bus fares, metro, auto, cab, petrol', 'Bus'),
@@ -79,11 +73,12 @@ INSERT INTO categories (name, description, icon) VALUES
 ('Other', 'Miscellaneous and unexpected spending', 'CircleDollarSign')
 ON CONFLICT (name) DO NOTHING;
 
--- 9. Row Level Security (RLS) Policies (Optional for direct client, enforced in backend via user_id)
+-- 8. Row Level Security (RLS) Policies (Optional for direct client, enforced in backend via user_id)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE budgets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 
 -- Public can view default categories
+DROP POLICY IF EXISTS "Public read categories" ON categories;
 CREATE POLICY "Public read categories" ON categories FOR SELECT USING (true);
